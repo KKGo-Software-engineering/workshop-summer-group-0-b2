@@ -5,10 +5,10 @@ resource "aws_eks_cluster" "eks-cluster" {
 
   vpc_config {
     subnet_ids = [
-      aws_subnet.private-1a.id,
-      aws_subnet.private-1b.id,
-      aws_subnet.public-1a.id,
-      aws_subnet.public-1b.id
+      var.subnet_private-1a,
+      var.subnet_private-1b,
+      var.subnet_public-1a,
+      var.subnet_public-1b
     ]
   }
 
@@ -54,7 +54,7 @@ resource "helm_release" "nginx_ingress" {
   chart      = "ingress-nginx"
   version    = "v4.10.1"
 
-  values = [file("values/nginx.yaml")]
+  values = [file("${path.module}/values/nginx.yaml")]
 }
 
 resource "helm_release" "argocd" {
@@ -68,23 +68,7 @@ resource "helm_release" "argocd" {
   chart      = "argo-cd"
   version    = "6.7.17"
 
-  values = [file("values/argocd.yaml")]
+  values = [file("${path.module}/values/argocd.yaml")]
 
   depends_on = [helm_release.nginx_ingress]
-}
-
-data "kubernetes_service" "service" {
-  metadata {
-    name      = "ingress-nginx-controller"
-    namespace = "ingress-nginx"
-  }
-  depends_on = [helm_release.argocd]
-}
-
-resource "cloudflare_record" "argocd" {
-  name    = "argocd"
-  value   = data.kubernetes_service.service.status[0].load_balancer[0].ingress[0].hostname
-  type    = "CNAME"
-  proxied = true
-  zone_id = var.zone_id
 }

@@ -17,7 +17,6 @@ resource "aws_subnet" "public-1a" {
   availability_zone       = "ap-southeast-1a"
   map_public_ip_on_launch = true
 
-
   tags = {
     Name = "${var.instance_name}-public-1a"
   }
@@ -74,7 +73,7 @@ resource "aws_security_group" "sonarqube-sg" {
 
 resource "aws_instance" "sonarqube" {
   ami                    = "ami-02a96df5f84f42942"
-  instance_type          = "t2.medium"
+  instance_type          = var.instance_type
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.sonarqube-sg.id]
   subnet_id              = aws_subnet.public-1a.id
@@ -86,10 +85,10 @@ resource "aws_instance" "sonarqube" {
 }
 
 resource "local_file" "ansible_inventory" {
-  content = templatefile("ansible/templates/sonarqube.ini", {
+  content = templatefile("${path.module}/ansible/templates/sonarqube.ini", {
     instance_ip = aws_instance.sonarqube.public_ip
   })
-  filename = "ansible/inventories/sonarqube.ini"
+  filename = "${path.module}/ansible/inventories/sonarqube.ini"
 }
 
 resource "cloudflare_record" "sonarqube" {

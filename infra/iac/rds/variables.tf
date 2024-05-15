@@ -12,6 +12,10 @@ variable "db_username" {
 
 variable "db_name" {
   type        = string
-  default     = "workshop"
   description = "database name"
+}
+
+variable "vpc_id" {
+  type        = string
+  description = "ID of the VPC"
 }

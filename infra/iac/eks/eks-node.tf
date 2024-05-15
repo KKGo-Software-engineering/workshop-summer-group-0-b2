@@ -2,20 +2,19 @@ resource "aws_eks_node_group" "private-nodes" {
   cluster_name    = aws_eks_cluster.eks-cluster.name
   node_group_name = "private-nodes"
   node_role_arn   = aws_iam_role.nodes.arn
-
   subnet_ids = [
-    aws_subnet.private-1a.id,
-    aws_subnet.private-1b.id
+    var.subnet_private-1b,
+    var.subnet_private-1b
   ]
 
-  capacity_type  = "ON_DEMAND"   # or ON_DEMAND
-  instance_types = ["t3.medium"] # or ["t3.medium"]
+  capacity_type  = var.capacity_type
+  instance_types = [var.instance_type]
   disk_size      = 20
 
   scaling_config {
-    desired_size = 2
-    max_size     = 3
-    min_size     = 2
+    desired_size = var.desired_size
+    max_size     = var.max_size
+    min_size     = var.min_size
   }
 
   update_config {
